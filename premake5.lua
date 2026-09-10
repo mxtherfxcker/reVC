@@ -255,7 +255,7 @@ workspace "reVC"
 		defines { "NDEBUG" }
 		optimize "Speed"
 		if(_OPTIONS["with-lto"]) then
-			flags { "LinkTimeOptimization" }
+			linktimeoptimization "On"
 		end
 
 	filter { "platforms:win*" }
@@ -380,7 +380,7 @@ project "librw"
 		staticruntime "off"
 
 	filter "platforms:*RW34*"
-		flags { "ExcludeFromBuild" }
+		excludefrombuild "On"
 	filter  {}
 end
 
