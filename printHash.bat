@@ -1,26 +1,27 @@
 @echo off
+setlocal EnableExtensions
 
-REM creates version.h with HEAD commit hash
-REM params: $1=full path to output file (usually points version.h)
-
-setlocal enableextensions enabledelayedexpansion
+set "OUTPUT=%~dp0version.h"
+set "VERSION=unknown"
 
 cd /d "%~dp0"
 
-break> %1
+where git >nul 2>&1
+if not errorlevel 1 (
+    for /f "delims=" %%v in ('git rev-parse --short HEAD 2^>nul') do (
+        set "VERSION=%%v"
+    )
+)
 
-<nul set /p=^"#define GIT_SHA1 ^"^"> %1
+(
+    echo #pragma once
+    echo.
+    echo #define GIT_SHA1 "%VERSION%"
+    echo.
+    echo const char* g_GIT_SHA1 = GIT_SHA1;
+) > "%OUTPUT%"
 
-where git
-if "%errorlevel%" == "0" ( goto :havegit ) else ( goto :writeending )
+echo Generated: "%OUTPUT%"
+echo Git SHA1: "%VERSION%"
 
-:havegit
-for /f %%v in ('git rev-parse --short HEAD') do set version=%%v
-<nul set /p="%version%" >> %1
-
-:writeending
-
-echo ^" >> %1
-echo const char* g_GIT_SHA1 = GIT_SHA1; >> %1
-
-EXIT /B
+exit /b 0
