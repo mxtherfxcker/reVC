@@ -1,4 +1,4 @@
-<a href="https://github.com/mxtherfxcker/reVC"><img src="https://github.com/mxtherfxcker/reVC/blob/miami/res/images/logo_1024.png?raw=true" alt="reVC logo" width="15%"></a>
+<a href="https://github.com/mxtherfxcker/reVC"><img src="https://github.com/mxtherfxcker/reVC/blob/miami/res/images/logo_1024.png?raw=true" alt="reVC logo" width="20%"></a>
 
 > [!NOTE]
 > Original repository here: https://github.com/mrxenginner/reVC
@@ -7,7 +7,7 @@
 > This fork is being developed for Windows OS.  
 > Support for other systems is not intended in this fork.
 
-### Intro
+## Intro
 
 In this repository you'll find the fully reversed source code for GTA VC ([miami](https://github.com/mxtherfxcker/reVC) branch).
 
@@ -18,20 +18,20 @@ In this repository you'll find the fully reversed source code for GTA VC ([miami
 > [!WARNING]
 > PS2/Xbox don't supported for now.
 
-### Installation
+## Installation
 
 - reVC requires game assets to work, so you **must** own [a copy of GTA Vice City](https://store.steampowered.com/app/12110/Grand_Theft_Auto_Vice_City).
 - Build reVC or download the [latest build](https://github.com/mxtherfxcker/reVC/releases).
 - Extract the downloaded zip over your GTA VC directory and run reVC. The zip includes the binary, updated and additional gamefiles and in case of OpenAL the required dlls.
 
-### Screenshots
+## Screenshots
 
 [![screen_ 1613087332](https://user-images.githubusercontent.com/1521437/107714111-f84f3200-6ccc-11eb-902e-d757481d579a.png)](https://github.com/mrxenginner/reVC)
 [![screen_ 1613086852](https://user-images.githubusercontent.com/1521437/107714115-fa18f580-6ccc-11eb-9de5-eb4cd04865d3.png)](https://github.com/mrxenginner/reVC)
 [![screen_ 1613086989](https://user-images.githubusercontent.com/1521437/107714103-f38a7e00-6ccc-11eb-88a3-c8c2033c51d6.png)](https://github.com/mrxenginner/reVC)
 [![screen_ 1613087193](https://user-images.githubusercontent.com/1521437/107714106-f4bbab00-6ccc-11eb-96a9-13821d9b9684.png)](https://github.com/mrxenginner/reVC)
 
-### Improvements
+## Improvements
 
 We have implemented a number of changes and improvements to the original game.
 > [!NOTE]
@@ -61,11 +61,11 @@ We have implemented a number of changes and improvements to the original game.
 
 ###### And much more...
 
-### TODO
+## TODO
 
 You can find the current TODO list [here](https://github.com/mrxenginner/reVC/blob/miami/README.md#to-do).
 
-### Modding
+## Modding
 
 Asset modifications (models, texture, handling, script, ...) should work the same way as with original GTA for the most part.
 
@@ -78,15 +78,11 @@ others will simply have to be rewritten and integrated into the code directly.
 
 Sorry for the inconvenience.
 
-### Building from Source
+## Building from Source
 
 > [!TIP]
 > When using premake, you may want to point `GTA_VC_RE_DIR` environment variable to **GTA Vice City root folder** if you want the executable to be moved there via post-build script.
 
-[Install the DX9 SDK.](https://archive.org/details/dxsdk_jun10)  
-Clone the repository via `git clone --recurse-submodules https://github.com/mxtherfxcker/reVC.git`.  
-Run `premake-vsXXXX.cmd` and open the `.sln` file from the **build/** directory.
-
----
-
-You can find a more detailed description here: https://github.com/mrxenginner/reVC.
+* [Install the DX9 SDK.](https://archive.org/details/dxsdk_jun10)
+* Clone the repository via `git clone --recurse-submodules https://github.com/mxtherfxcker/reVC.git`.
+* Run `premake-vsXXXX.cmd` and open the `.sln` file from the **build/** directory.
