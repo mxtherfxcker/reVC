@@ -42,8 +42,6 @@ newoption {
 	description = "Don't print full paths into binary"
 }
 
-require("autoconf")
-
 if(_OPTIONS["with-librw"]) then
 	Librw = "vendor/librw"
 else
@@ -69,16 +67,25 @@ function getarch(a)
 end
 
 local function dependencyincludedirs(paths)
-	if _ACTION == "xcode4" then
+	if _ACTION == "xcode4" and externalincludedirs then
 		externalincludedirs(paths)
 	else
 		includedirs(paths)
 	end
 end
 
+local hostarch = os.hostarch and os.hostarch() or os.getenv("PROCESSOR_ARCHITEW6432") or os.getenv("PROCESSOR_ARCHITECTURE")
+if hostarch == "AMD64" then
+	hostarch = "x86_64"
+elseif hostarch == "x86" or hostarch == "x86_32" then
+	hostarch = "x86"
+elseif hostarch == "ARM64" then
+	hostarch = "ARM64"
+end
+
 local macosxHomebrewPrefix = os.getenv("HOMEBREW_PREFIX")
 if not macosxHomebrewPrefix or macosxHomebrewPrefix == "" then
-	macosxHomebrewPrefix = os.host() == "macosx" and os.hostarch() == "ARM64" and "/opt/homebrew" or "/usr/local"
+	macosxHomebrewPrefix = hostarch == "ARM64" and "/opt/homebrew" or "/usr/local"
 end
 
 local function resolveMacosxDependencyDylib(formula, filename, homebrewPrefix)
@@ -113,8 +120,8 @@ local function resolveMacosxDependencyDylibs(homebrewPrefix)
 end
 
 local macosxDependencyDylibs = resolveMacosxDependencyDylibs(macosxHomebrewPrefix)
-local macosxArm64HomebrewPrefix = os.hostarch() == "ARM64" and macosxHomebrewPrefix or "/opt/homebrew"
-local macosxAmd64HomebrewPrefix = os.hostarch() == "ARM64" and "/usr/local" or macosxHomebrewPrefix
+local macosxArm64HomebrewPrefix = hostarch == "ARM64" and macosxHomebrewPrefix or "/opt/homebrew"
+local macosxAmd64HomebrewPrefix = hostarch == "ARM64" and "/usr/local" or macosxHomebrewPrefix
 local macosxArm64DependencyDylibs = resolveMacosxDependencyDylibs(macosxArm64HomebrewPrefix)
 local macosxAmd64DependencyDylibs = resolveMacosxDependencyDylibs(macosxAmd64HomebrewPrefix)
 
@@ -403,7 +410,9 @@ project "reVC"
 		}
 		links(macosxDependencyPaths(macosxDependencyDylibs))
 		links { "pthread" }
-		embedAndSign(macosxDependencyFilenames(macosxDependencyDylibs))
+		if embedAndSign then
+			embedAndSign(macosxDependencyFilenames(macosxDependencyDylibs))
+		end
 		postbuildcommands {
 			'{MKDIR} "%{cfg.targetdir}/reVC.app/Contents/Resources"',
 			'{COPYFILE} "%{prj.location}/../LICENSE.md" "%{cfg.targetdir}/reVC.app/Contents/Resources/LICENSE"',
@@ -499,7 +508,11 @@ project "reVC"
 	includedirs { "src/extras" }
 
 	filter "action:xcode4"
-		externalincludedirs { "src/audio/eax", "src/fakerw", Librw }
+		if externalincludedirs then
+			externalincludedirs { "src/audio/eax", "src/fakerw", Librw }
+		else
+			includedirs { "src/audio/eax", "src/fakerw", Librw }
+		end
 
 	filter {}
 
@@ -566,17 +579,10 @@ project "reVC"
 		staticruntime "off"
 		
 	filter "platforms:*glfw*"
-		premake.modules.autoconf.parameters = "-lglfw -lX11"
-		autoconfigure {
-			-- iterates all configs and runs on them
-			["dontWrite"] = function (cfg)
-				check_symbol_exists(cfg, "haveX11", "glfwGetX11Display", { "X11/Xlib.h", "X11/XKBlib.h", "GLFW/glfw3.h", "GLFW/glfw3native.h" }, "GLFW_EXPOSE_NATIVE_X11")
-				if cfg.autoconf["haveX11"] ~= nil and cfg.autoconf["haveX11"] == 1 then
-					table.insert(cfg.links, "X11")
-					table.insert(cfg.defines, "GET_KEYBOARD_INPUT_FROM_X11")
-				end
-			end
-		}
+		-- Stock Premake does not provide the project's optional autoconf module.
+		-- The X11 symbol probe is only relevant to Linux and is intentionally omitted
+		-- from the Windows-compatible project generation.
+
 
 	filter "platforms:win*oal"
 		includedirs { "vendor/openal-soft/include" }
