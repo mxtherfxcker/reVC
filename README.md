@@ -1,7 +1,11 @@
-<a href="https://github.com/mxtherfxcker/reVC"><img src="https://github.com/mxtherfxcker/reVC/blob/miami/res/images/logo_1024.png?raw=true" alt="reVC logo" width="200"></a>
+<a href="https://github.com/mxtherfxcker/reVC"><img src="https://github.com/mxtherfxcker/reVC/blob/miami/res/images/logo_1024.png?raw=true" alt="reVC logo" width="15%"></a>
 
 > [!NOTE]
-> Original repository here -> https://github.com/mrxenginner/reVC
+> Original repository here: https://github.com/mrxenginner/reVC
+
+> [!CAUTION]
+> This fork is being developed for Windows OS.  
+> Support for other systems is not intended in this fork.
 
 ### Intro
 
@@ -75,9 +79,6 @@ others will simply have to be rewritten and integrated into the code directly.
 Sorry for the inconvenience.
 
 ### Building from Source
-
-> [!CAUTION]
-> In this fork, the correct build via premake5 is only functional on Windows.
 
 > [!TIP]
 > When using premake, you may want to point `GTA_VC_RE_DIR` environment variable to **GTA Vice City root folder** if you want the executable to be moved there via post-build script.
