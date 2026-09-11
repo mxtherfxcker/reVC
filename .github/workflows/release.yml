@@ -8,6 +8,11 @@ on:
         required: true
         type: string
 
+      tag:
+        description: "Existing Git tag to publish (for example: v1.0.0)"
+        required: true
+        type: string
+
       changes:
         description: "What's new in this release"
         required: true
@@ -183,16 +188,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version }}
+          TAG: ${{ inputs.tag }}
         run: |
           $args = @(
             "release",
             "create",
-            "v$env:VERSION",
+            $env:TAG,
             "release-assets/*.zip",
             "--title",
             "reVC v$env:VERSION",
             "--notes-file",
-            "release.md"
+            "release.md",
+            "--verify-tag"
           )
 
           if ("${{ inputs.prerelease }}" -eq "true") {
