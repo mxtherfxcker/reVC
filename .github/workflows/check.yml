@@ -1,0 +1,69 @@
+name: reVC Check (amd64)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  GLFW_BASE: "glfw-3.5.1.bin.WIN64"
+  GLFW_FILE: "glfw-3.5.1.bin.WIN64.zip"
+  GLFW_URL: "https://github.com/glfw/glfw/releases/download/3.5.1/glfw-3.5.1.bin.WIN64.zip"
+
+jobs:
+  build:
+    name: Build ${{ matrix.buildtype }} / ${{ matrix.platform }}
+
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        platform:
+          - win-amd64-librw_d3d9-oal
+          - win-amd64-librw_gl3_glfw-oal
+
+        buildtype:
+          - Debug
+          - Release
+
+    steps:
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Download GLFW
+        if: matrix.platform == 'win-amd64-librw_gl3_glfw-oal'
+        uses: carlosperate/download-file-action@v2
+        with:
+          file-url: ${{ env.GLFW_URL }}
+          file-name: ${{ env.GLFW_FILE }}
+
+      - name: Unpack GLFW
+        if: matrix.platform == 'win-amd64-librw_gl3_glfw-oal'
+        shell: pwsh
+        run: 7z x "${{ env.GLFW_FILE }}"
+
+      - name: Configure build
+        shell: bash
+        run: |
+          ./premake5 vs2022 \
+            --with-librw \
+            --no-full-paths \
+            --glfwdir64="${GLFW_BASE}"
+
+      - name: Build
+        shell: pwsh
+        run: |
+          msbuild `
+            build/reVC.sln `
+            /m `
+            /property:Configuration=${{ matrix.buildtype }} `
+            /property:Platform=${{ matrix.platform }}

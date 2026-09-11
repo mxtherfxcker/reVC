@@ -1,7 +1,16 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 
-set "OUTPUT=%~dp0version.h"
+REM Generate GitSHA1.cpp containing the current Git commit hash.
+REM Usage:
+REM   printHash.bat <output-file>
+
+if "%~1"=="" (
+    echo Usage: %~nx0 ^<output-file^>
+    exit /b 1
+)
+
+set "OUTPUT=%~1"
 set "VERSION=unknown"
 
 cd /d "%~dp0"
@@ -14,14 +23,17 @@ if not errorlevel 1 (
 )
 
 (
-    echo #pragma once
-    echo.
-    echo #define GIT_SHA1 "%VERSION%"
+    echo #define GIT_SHA1 "!VERSION!"
     echo.
     echo const char* g_GIT_SHA1 = GIT_SHA1;
 ) > "%OUTPUT%"
 
+if not exist "%OUTPUT%" (
+    echo Failed to generate "%OUTPUT%"
+    exit /b 1
+)
+
 echo Generated: "%OUTPUT%"
-echo Git SHA1: "%VERSION%"
+echo Git SHA1: "!VERSION!"
 
 exit /b 0

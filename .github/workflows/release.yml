@@ -1,0 +1,202 @@
+name: reVC Release (amd64)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (for example: 1.0.0)"
+        required: true
+        type: string
+
+      changes:
+        description: "What's new in this release"
+        required: true
+        type: string
+
+      prerelease:
+        description: "Mark this release as a pre-release"
+        required: true
+        default: false
+        type: boolean
+
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  GLFW_VER: "3.5.1"
+  GLFW_BASE: "glfw-3.5.1.bin.WIN64"
+  GLFW_FILE: "glfw-3.5.1.bin.WIN64.zip"
+  GLFW_URL: "https://github.com/glfw/glfw/releases/download/3.5.1/glfw-3.5.1.bin.WIN64.zip"
+
+jobs:
+  build:
+    name: Build ${{ matrix.buildtype }} / ${{ matrix.platform }}
+
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        platform:
+          - win-amd64-librw_d3d9-oal
+          - win-amd64-librw_gl3_glfw-oal
+
+        buildtype:
+          - Debug
+          - Release
+
+    steps:
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Download GLFW
+        if: matrix.platform == 'win-amd64-librw_gl3_glfw-oal'
+        uses: carlosperate/download-file-action@v2
+        with:
+          file-url: ${{ env.GLFW_URL }}
+          file-name: ${{ env.GLFW_FILE }}
+
+      - name: Unpack GLFW
+        if: matrix.platform == 'win-amd64-librw_gl3_glfw-oal'
+        shell: pwsh
+        run: |
+          7z x "${{ env.GLFW_FILE }}"
+
+      - name: Configure build
+        shell: bash
+        run: |
+          ./premake5 vs2022 \
+            --with-librw \
+            --no-full-paths \
+            --glfwdir64="${GLFW_BASE}"
+
+      - name: Build
+        shell: pwsh
+        run: |
+          msbuild `
+            build/reVC.sln `
+            /m `
+            /property:Configuration=${{ matrix.buildtype }} `
+            /property:Platform=${{ matrix.platform }}
+
+      - name: Prepare game files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "./gamefiles" | Out-Null
+
+          Move-Item `
+            "./bin/${{ matrix.platform }}/${{ matrix.buildtype }}/reVC.exe" `
+            "./gamefiles/reVC.exe" `
+            -Force
+
+          Move-Item `
+            "./bin/${{ matrix.platform }}/${{ matrix.buildtype }}/reVC.pdb" `
+            "./gamefiles/reVC.pdb" `
+            -Force
+
+          Copy-Item `
+            "./vendor/mpg123/dist/Win64/libmpg123-0.dll" `
+            "./gamefiles/libmpg123-0.dll" `
+            -Force
+
+          Copy-Item `
+            "./vendor/openal-soft/dist/Win64/OpenAL32.dll" `
+            "./gamefiles/OpenAL32.dll" `
+            -Force
+
+      - name: Package build
+        if: github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          $archive = "reVC_${{ inputs.version }}_${{ matrix.buildtype }}_${{ matrix.platform }}.zip"
+
+          7z a `
+            "$archive" `
+            "./gamefiles/*"
+
+      - name: Upload CI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: reVC_${{ matrix.buildtype }}_${{ matrix.platform }}
+          path: ./gamefiles/*
+          if-no-files-found: error
+
+      - name: Upload release package
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: package_${{ matrix.buildtype }}_${{ matrix.platform }}
+          path: ./reVC_${{ inputs.version }}_${{ matrix.buildtype }}_${{ matrix.platform }}.zip
+          if-no-files-found: error
+
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+
+    if: github.event_name == 'workflow_dispatch'
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download release packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: package_*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Generate release notes
+        shell: pwsh
+        env:
+          VERSION: ${{ inputs.version }}
+          CHANGES: ${{ inputs.changes }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          $template = Get-Content ".github/release-template.md" -Raw
+
+          $shortCommit = $env:COMMIT.Substring(0, 7)
+          $date = Get-Date -Format "yyyy-MM-dd"
+
+          $notes = $template `
+            -replace "{{VERSION}}", $env:VERSION `
+            -replace "{{CHANGES}}", $env:CHANGES `
+            -replace "{{COMMIT}}", $shortCommit `
+            -replace "{{DATE}}", $date
+
+          $notes | Set-Content "release.md" -Encoding utf8
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          $args = @(
+            "release",
+            "create",
+            "v$env:VERSION",
+            "release-assets/*.zip",
+            "--title",
+            "reVC v$env:VERSION",
+            "--notes-file",
+            "release.md"
+          )
+
+          if ("${{ inputs.prerelease }}" -eq "true") {
+            $args += "--prerelease"
+          }
+
+          gh @args
