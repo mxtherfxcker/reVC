@@ -19,6 +19,7 @@
 #include "Heli.h"
 #include "Plane.h"
 #include "MemoryHeap.h"
+#include "VisibilityPlugins.h"
 
 CPlaneNode *pPathNodes;
 CPlaneNode *pPath2Nodes;
@@ -415,7 +416,7 @@ CPlane::ProcessControl(void)
 			m_fSpeed = PlanePathSpeed[m_nPlaneId]/60.0f;
 			m_vecTurnSpeed = CVector(0.0f, 0.0f, 0.0f);
 
-			m_isFarAway = !((posFront - TheCamera.GetPosition()).MagnitudeSqr2D() < sq(300.0f));
+			m_isFarAway = !((posFront - TheCamera.GetPosition()).MagnitudeSqr2D() < sq(300.0f * TheCamera.GenerationDistMultiplier * CVisibilityPlugins::ms_bigVehicleLod1Dist));
 		}else{
 			float planePathPosition;
 			float totalLengthOfFlightPath;
@@ -548,7 +549,7 @@ CPlane::ProcessControl(void)
 			m_fSpeed = planePathSpeed/60.0f;
 			m_vecTurnSpeed = CVector(0.0f, 0.0f, 0.0f);
 
-			m_isFarAway = !((posFront - TheCamera.GetPosition()).MagnitudeSqr2D() < sq(300.0f));
+			m_isFarAway = !((posFront - TheCamera.GetPosition()).MagnitudeSqr2D() < sq(300.0f * TheCamera.GenerationDistMultiplier * CVisibilityPlugins::ms_bigVehicleLod1Dist));
 		}
 	}
 
