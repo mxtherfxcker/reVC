@@ -2648,13 +2648,13 @@ WinMain(HINSTANCE instance,
 
 HRESULT _InputInitialise()
 {
-	HRESULT hr;
-
 	// Create a DInput object
+	HRESULT hr = nil;
 	if( FAILED( hr = DirectInput8Create( GetModuleHandle(nil), DIRECTINPUT_VERSION, 
 										IID_IDirectInput8, (VOID**)&PSGLOBAL(dinterface), nil ) ) )
 		return hr;
-		
+	
+	ShowCursor(FALSE);
 	return S_OK;
 }
 
