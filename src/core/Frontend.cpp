@@ -242,6 +242,10 @@ CMenuManager::ScrollUpListByOne()
 			m_nSelectedListRow--;
 			m_nFirstVisibleRowOnList--;
 			m_nScrollbarTopMargin -= SCROLLBAR_MAX_HEIGHT / m_nTotalListRow;
+		} else if (m_nSelectedListRow == 0) {
+			m_nSelectedListRow = m_nTotalListRow - 1;
+			m_nFirstVisibleRowOnList = Max(0, m_nTotalListRow - MAX_VISIBLE_OPTION_ON_SCREEN);
+			m_nScrollbarTopMargin = (SCROLLBAR_MAX_HEIGHT / m_nTotalListRow) * m_nFirstVisibleRowOnList;
 		}
 	} else {
 		m_nSelectedListRow--;
@@ -256,10 +260,18 @@ CMenuManager::ScrollDownListByOne()
 			m_nSelectedListRow++;
 			m_nFirstVisibleRowOnList++;
 			m_nScrollbarTopMargin += SCROLLBAR_MAX_HEIGHT / m_nTotalListRow;
+		} else if (m_nSelectedListRow == m_nTotalListRow - 1) {
+			m_nSelectedListRow = 0;
+			m_nFirstVisibleRowOnList = 0;
+			m_nScrollbarTopMargin = 0;
 		}
 	} else {
 		if (m_nSelectedListRow < m_nTotalListRow - 1) {
 			m_nSelectedListRow++;
+		} else {
+			m_nSelectedListRow = 0;
+			m_nFirstVisibleRowOnList = 0;
+			m_nScrollbarTopMargin = 0;
 		}
 	}
 }
@@ -4239,7 +4251,9 @@ CMenuManager::ProcessList(bool &optionSelected, bool &goBack)
 		if ((m_nHoverOption == HOVEROPTION_HOLDING_SCROLLBAR) || holdingScrollBar) {
 			holdingScrollBar = true;
 			// TODO: This part is a bit hard to reverse. Not much code tho
+#ifndef NDEBUG
 			assert(0 && "Holding scrollbar isn't done yet");
+#endif
 		} else {
 			switch (m_nHoverOption) {
 			case HOVEROPTION_OVER_SCROLL_UP:
