@@ -290,6 +290,8 @@ void CGame::ShutdownRenderWare(void)
 	CustomPipes::CustomPipeShutdown();
 #endif
 
+	CMBlur::MotionBlurClose();
+
 	DestroySplashScreen();
 	CHud::Shutdown();
 	CFont::Shutdown();
@@ -642,7 +644,6 @@ bool CGame::ShutDown(void)
 	CPools::ShutDown();
 	CHud::ReInitialise();
 	CTxdStore::RemoveTxdSlot(gameTxdSlot);
-	CMBlur::MotionBlurClose();
 	CdStreamRemoveImages();
 #ifdef USE_TEXTURE_POOL
 	_TexturePoolsFinalShutdown();
