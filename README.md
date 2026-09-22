@@ -1,4 +1,4 @@
-<a href="https://github.com/mxtherfxcker/reVC"><img src="https://github.com/mxtherfxcker/reVC/blob/miami/res/images/logo_1024.png?raw=true" alt="reVC logo" width="20%" height="100%"></a>
+<a href="https://github.com/mxtherfxcker/reVC"><img src="https://github.com/mxtherfxcker/reVC/blob/miami/res/images/logo_1024.png?raw=true" alt="reVC logo" width="100"></a>
 
 > [!NOTE]
 > Original repository here: https://github.com/mrxenginner/reVC
